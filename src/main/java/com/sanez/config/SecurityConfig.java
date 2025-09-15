@@ -50,13 +50,13 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // Permitir acceso público a rutas de autenticación
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // Solo ADMIN puede acceder a estas rutas
-                        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN") // Usuarios y Admin pueden acceder
-                        //.requestMatchers("/h2-console/**").permitAll()
-                        .anyRequest().authenticated() // Proteger todas las demás rutas
+                        .requestMatchers("/api/auth/**").permitAll()                     // registro/login público
+                        .requestMatchers("/api/notas/**").hasAnyRole("USER", "ADMIN")   // solo usuarios autenticados
+                        .requestMatchers("/api/usuarios/**").hasRole("ADMIN")           // solo admin puede gestionar usuarios
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")              // solo admin
+                        .anyRequest().authenticated()                                    //odo lo demás requiere login
                 );
-                        //.headers(headers -> headers
+        //.headers(headers -> headers
                                 //.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
 
         http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);

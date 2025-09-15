@@ -5,6 +5,7 @@ import com.sanez.dto.*;
 import com.sanez.mapper.UsuarioMapper;
 import com.sanez.model.Usuario;
 import com.sanez.repository.UsuarioRepository;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -40,7 +41,7 @@ public class AuthController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
@@ -65,7 +66,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@RequestBody UsuarioRequestDTO usuarioRequestDTO) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody UsuarioRequestDTO usuarioRequestDTO) {
         if (usuarioRepository.findByEmail(usuarioRequestDTO.getEmail()).isPresent()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "El email ya está en uso"));

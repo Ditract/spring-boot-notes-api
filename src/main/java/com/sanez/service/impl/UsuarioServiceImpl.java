@@ -2,6 +2,7 @@ package com.sanez.service.impl;
 
 import com.sanez.dto.UsuarioRequestDTO;
 import com.sanez.dto.UsuarioResponseDTO;
+import com.sanez.exception.RecursoNoEncontradoException;
 import com.sanez.mapper.UsuarioMapper;
 import com.sanez.model.Rol;
 import com.sanez.model.Usuario;
@@ -9,7 +10,7 @@ import com.sanez.repository.RoleRepository;
 import com.sanez.repository.UsuarioRepository;
 import com.sanez.service.UsuarioService;
 import jakarta.transaction.Transactional;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,11 +22,11 @@ import java.util.stream.Collectors;
 public class UsuarioServiceImpl implements UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
 
     public UsuarioServiceImpl(UsuarioRepository usuarioRepository,
-                              BCryptPasswordEncoder passwordEncoder, RoleRepository roleRepository) {
+                              PasswordEncoder passwordEncoder, RoleRepository roleRepository) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
@@ -39,7 +40,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         // 🔹 Asignar automáticamente el rol "USER"
         Rol rolUsuario = roleRepository.findByNombre("USER")
-                .orElseThrow(() -> new RuntimeException("Error: Rol 'USER' no encontrado"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Error: Rol 'USER' no encontrado"));
 
         usuario.setRoles(Set.of(rolUsuario));
 
@@ -53,7 +54,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     public UsuarioResponseDTO obtenerUsuarioPorId(Long id) {
         return usuarioRepository.findById(id)
                 .map(UsuarioMapper::toResponseDTO)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
     }
 
     @Override
@@ -66,6 +67,8 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public void eliminarUsuario(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
         usuarioRepository.deleteById(id);
     }
 }

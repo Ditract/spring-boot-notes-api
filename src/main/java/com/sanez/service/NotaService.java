@@ -1,12 +1,10 @@
 package com.sanez.service;
 
-
 import com.sanez.dto.NotaDTO;
-
 import java.util.List;
 
 public interface NotaService {
-    NotaDTO crearNota(Long usuarioId, NotaDTO notaDTO);
-    List<NotaDTO> obtenerNotasPorUsuario(Long usuarioId);
+    NotaDTO crearNota(NotaDTO notaDTO);
+    List<NotaDTO> obtenerNotasPorUsuario();
     void eliminarNota(Long id);
 }

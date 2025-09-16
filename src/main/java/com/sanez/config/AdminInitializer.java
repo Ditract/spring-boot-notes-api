@@ -42,8 +42,8 @@ public class AdminInitializer implements CommandLineRunner {
 
             Usuario admin = new Usuario();
             admin.setNombre("Admin");
-            admin.setEmail("admin@sanez.com");
-            admin.setPassword(passwordEncoder.encode("admin123")); // La contraseña se cifra
+            admin.setEmail("admin@gmail.com");
+            admin.setPassword(passwordEncoder.encode("JojoLala890?")); // La contraseña se cifra
             Set<Rol> roles = new HashSet<>();
             roles.add(rolAdmin);
             admin.setRoles(roles);

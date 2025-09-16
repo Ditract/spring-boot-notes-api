@@ -6,7 +6,9 @@ import com.sanez.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -21,7 +23,13 @@ public class UsuarioController {
 
     @PostMapping
     public ResponseEntity<UsuarioResponseDTO> crearUsuario(@Valid @RequestBody UsuarioRequestDTO usuarioRequestDTO) {
-        return ResponseEntity.ok(usuarioService.crearUsuario(usuarioRequestDTO));
+        UsuarioResponseDTO createdUsuario = usuarioService.crearUsuario(usuarioRequestDTO);
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(createdUsuario.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(createdUsuario);
     }
 
     @GetMapping("/{id}")

@@ -5,7 +5,9 @@ import com.sanez.service.NotaService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -18,14 +20,20 @@ public class NotaController {
         this.notaService = notaService;
     }
 
-    @PostMapping("/usuario/{usuarioId}")
-    public ResponseEntity<NotaDTO> crearNota(@PathVariable Long usuarioId, @Valid @RequestBody NotaDTO notaDTO) {
-        return ResponseEntity.ok(notaService.crearNota(usuarioId, notaDTO));
+    @PostMapping
+    public ResponseEntity<NotaDTO> crearNota(@Valid @RequestBody NotaDTO notaDTO) {
+        NotaDTO createdNota = notaService.crearNota(notaDTO);
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(createdNota.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(createdNota);
     }
 
-    @GetMapping("/usuario/{usuarioId}")
-    public ResponseEntity<List<NotaDTO>> obtenerNotasPorUsuario(@PathVariable Long usuarioId) {
-        return ResponseEntity.ok(notaService.obtenerNotasPorUsuario(usuarioId));
+    @GetMapping
+    public ResponseEntity<List<NotaDTO>> obtenerNotasPorUsuario() {
+        return ResponseEntity.ok(notaService.obtenerNotasPorUsuario());
     }
 
     @DeleteMapping("/{id}")

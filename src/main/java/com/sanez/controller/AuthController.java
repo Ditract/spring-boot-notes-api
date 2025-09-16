@@ -2,9 +2,15 @@ package com.sanez.controller;
 
 import com.sanez.config.JwtUtil;
 import com.sanez.dto.*;
+import com.sanez.exception.CredencialesInvalidosException;
+import com.sanez.exception.EmailYaRegistradoException;
+import com.sanez.exception.RecursoNoEncontradoException;
 import com.sanez.mapper.UsuarioMapper;
+import com.sanez.model.Rol;
 import com.sanez.model.Usuario;
+import com.sanez.repository.RoleRepository;
 import com.sanez.repository.UsuarioRepository;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,9 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -30,26 +34,27 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
 
     public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil,
-                          UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+                          UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder,
+                          RoleRepository roleRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
     }
 
+    //Inicio de sesión
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         } catch (AuthenticationException exception) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "Bad credentials");
-            errorResponse.put("status", false);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            throw new CredencialesInvalidosException("Credenciales inválidos");
         }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -64,15 +69,22 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    //Registro de usuarios públicos
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@RequestBody UsuarioRequestDTO usuarioRequestDTO) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody UsuarioRequestDTO usuarioRequestDTO) {
         if (usuarioRepository.findByEmail(usuarioRequestDTO.getEmail()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", "El email ya está en uso"));
+            throw new EmailYaRegistradoException("El email ya está en uso");
         }
 
+        // ️Convertir DTO a entidad y encriptar contraseña
         Usuario usuario = UsuarioMapper.toEntity(usuarioRequestDTO);
-        usuario.setPassword(passwordEncoder.encode(usuarioRequestDTO.getPassword())); // Encripta la contraseña
+        usuario.setPassword(passwordEncoder.encode(usuarioRequestDTO.getPassword()));
+
+        // ️Asignar rol USER por defecto
+        Rol userRol = roleRepository.findByNombre("USER")
+                .orElseThrow(() -> new RecursoNoEncontradoException("Rol USER no encontrado en la base de datos"));
+        usuario.getRoles().add(userRol);
+
         usuarioRepository.save(usuario);
 
         UsuarioResponseDTO usuarioResponseDTO = UsuarioMapper.toResponseDTO(usuario);

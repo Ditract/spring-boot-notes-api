@@ -1,7 +1,5 @@
 package com.sanez.config;
 
-
-
 import com.sanez.model.Rol;
 import com.sanez.model.Usuario;
 import com.sanez.repository.RoleRepository;
@@ -21,18 +19,22 @@ public class AdminInitializer implements CommandLineRunner {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public AdminInitializer(UsuarioRepository usuarioRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public AdminInitializer(UsuarioRepository usuarioRepository,
+                            RoleRepository roleRepository,
+                            PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-
     @Override
     public void run(String... args) {
-        Optional<Usuario> adminExistente = usuarioRepository.findByEmail("admin@sanez.com");
+        String adminEmail = "admin@gmail.com"; // 🔹 Usar siempre el mismo
+
+        Optional<Usuario> adminExistente = usuarioRepository.findByEmail(adminEmail);
 
         if (adminExistente.isEmpty()) {
+            // Verifica si el rol ADMIN existe, si no lo crea
             Rol rolAdmin = roleRepository.findByNombre("ADMIN")
                     .orElseGet(() -> {
                         Rol nuevoRol = new Rol();
@@ -40,10 +42,12 @@ public class AdminInitializer implements CommandLineRunner {
                         return roleRepository.save(nuevoRol);
                     });
 
+            // Crear usuario administrador
             Usuario admin = new Usuario();
             admin.setNombre("Admin");
-            admin.setEmail("admin@gmail.com");
-            admin.setPassword(passwordEncoder.encode("JojoLala890?")); // La contraseña se cifra
+            admin.setEmail(adminEmail);
+            admin.setPassword(passwordEncoder.encode("JojoLala890?")); // 🔒 Contraseña encriptada
+
             Set<Rol> roles = new HashSet<>();
             roles.add(rolAdmin);
             admin.setRoles(roles);

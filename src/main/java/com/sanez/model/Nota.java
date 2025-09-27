@@ -18,7 +18,7 @@ public class Nota {
     @Column(nullable = false)
     private String titulo;
 
-    @Column(nullable = false, length = 500)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String contenido;
 
     @ManyToOne

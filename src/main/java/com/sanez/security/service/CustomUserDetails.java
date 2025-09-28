@@ -1,4 +1,4 @@
-package com.sanez.security;
+package com.sanez.security.service;
 
 import lombok.Getter;
 import lombok.Setter;

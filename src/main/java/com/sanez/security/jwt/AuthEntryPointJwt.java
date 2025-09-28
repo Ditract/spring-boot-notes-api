@@ -1,4 +1,4 @@
-package com.sanez.config;
+package com.sanez.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;

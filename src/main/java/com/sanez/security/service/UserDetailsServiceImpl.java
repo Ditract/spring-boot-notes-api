@@ -1,10 +1,9 @@
-package com.sanez.service.impl;
+package com.sanez.security.service;
 
 
 import com.sanez.exception.CredencialesInvalidosException;
 import com.sanez.model.Usuario;
 import com.sanez.repository.UsuarioRepository;
-import com.sanez.security.CustomUserDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;

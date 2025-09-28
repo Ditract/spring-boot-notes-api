@@ -1,5 +1,7 @@
-package com.sanez.config;
+package com.sanez.security.config;
 
+import com.sanez.security.jwt.AuthEntryPointJwt;
+import com.sanez.security.jwt.AuthTokenFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

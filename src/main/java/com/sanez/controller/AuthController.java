@@ -1,6 +1,6 @@
 package com.sanez.controller;
 
-import com.sanez.config.JwtUtil;
+import com.sanez.security.jwt.JwtUtil;
 import com.sanez.dto.*;
 import com.sanez.exception.CredencialesInvalidosException;
 import com.sanez.service.UsuarioService;

@@ -1,6 +1,6 @@
-package com.sanez.config;
+package com.sanez.security.jwt;
 
-import com.sanez.security.CustomUserDetails;
+import com.sanez.security.service.CustomUserDetails;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;

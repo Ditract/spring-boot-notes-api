@@ -62,6 +62,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         // Requiere rol USER o ADMIN para endpoints de notas.
                         .requestMatchers("/api/notas/**").hasAnyRole("USER", "ADMIN")
+                        // Requiere rol USER O ADMIN para enpoints de perfil
+                        .requestMatchers("/api/perfiles/**").hasAnyRole("USER", "ADMIN")
                         // Requiere rol ADMIN para gestión de usuarios.
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
                         // Requiere rol ADMIN para endpoints administrativos.

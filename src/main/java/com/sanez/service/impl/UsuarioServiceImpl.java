@@ -2,8 +2,10 @@ package com.sanez.service.impl;
 
 import com.sanez.dto.UsuarioRequestDTO;
 import com.sanez.dto.UsuarioResponseDTO;
+import com.sanez.exception.EmailYaRegistradoException;
 import com.sanez.exception.RecursoNoEncontradoException;
 import com.sanez.mapper.UsuarioMapper;
+import com.sanez.model.Perfil;
 import com.sanez.model.Rol;
 import com.sanez.model.Usuario;
 import com.sanez.repository.RoleRepository;
@@ -35,14 +37,23 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public UsuarioResponseDTO crearUsuario(UsuarioRequestDTO usuarioRequestDTO) {
+
+        if (usuarioRepository.findByEmail(usuarioRequestDTO.getEmail()).isPresent()) {
+            throw new EmailYaRegistradoException("El email ya está en uso");
+        }
+
         Usuario usuario = UsuarioMapper.toEntity(usuarioRequestDTO);
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
 
         // 🔹 Asignar automáticamente el rol "USER"
         Rol rolUsuario = roleRepository.findByNombre("USER")
                 .orElseThrow(() -> new RecursoNoEncontradoException("Error: Rol 'USER' no encontrado"));
-
         usuario.setRoles(Set.of(rolUsuario));
+
+        //Crear perfil automáticamente
+        Perfil perfil = new Perfil();
+        perfil.setUsuario(usuario);
+        usuario.setPerfil(perfil);
 
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
         return UsuarioMapper.toResponseDTO(usuarioGuardado);

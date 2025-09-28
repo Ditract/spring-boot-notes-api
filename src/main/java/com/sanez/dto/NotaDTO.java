@@ -18,7 +18,7 @@ public class NotaDTO {
     private String titulo;
 
     @NotBlank(message = "El contenido no puede estar vacío")
-    @Size(max = 1000, message = "El contenido no puede superar los 1000 caracteres")
+    @Size(max = 10000, message = "El contenido no puede superar las 1400 palabras.")
     private String contenido;
 
     private Long usuarioId;

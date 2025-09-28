@@ -1,5 +1,6 @@
 package com.sanez.config;
 
+import com.sanez.security.CustomUserDetails;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -43,26 +44,38 @@ public class JwtUtil {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        // Crea el token con: subject (username), claim de roles, fecha de emisión, expiración, y firma.
-        return Jwts.builder()
+        // Construye el token base con subject (username), roles, fechas de emisión y expiración.
+        JwtBuilder builder = Jwts.builder()
                 .subject(userDetails.getUsername()) // Establece el email/username como "subject".
                 .claim("roles", roles) // Añade los roles como claim personalizado.
                 .issuedAt(new Date()) // Fecha de emisión (ahora).
-                .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs)) // Fecha de expiración.
-                .signWith(getSigningKey()) // Firma el token con la clave secreta.
-                .compact(); // Genera el token como string.
+                .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs)); // Fecha de expiración.
+
+        // Si el UserDetails es una instancia de CustomUserDetails, incluye el ID del usuario en el token.
+        if (userDetails instanceof CustomUserDetails customUser) {
+            builder.claim("userId", customUser.getId()); // Añade el ID del usuario como claim.
+        }
+
+        // Firma el token con la clave secreta y lo genera como string.
+        return builder.signWith(getSigningKey()).compact();
     }
 
     // Genera un token de refresco (no usado actualmente, pero preparado para endpoints de refresh).
     public String generateRefreshToken(UserDetails userDetails) {
         String username = userDetails.getUsername();
-        // Crea el token de refresco con: subject (username), fecha de emisión, expiración más larga, y firma.
-        return Jwts.builder()
+        // Construye el token de refresco base con subject (username), fechas de emisión y expiración más larga.
+        JwtBuilder builder = Jwts.builder()
                 .subject(username)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + jwtRefreshExpirationMs))
-                .signWith(getSigningKey())
-                .compact();
+                .expiration(new Date(System.currentTimeMillis() + jwtRefreshExpirationMs));
+
+        // Si el UserDetails es una instancia de CustomUserDetails, incluye el ID del usuario en el token de refresco.
+        if (userDetails instanceof CustomUserDetails customUser) {
+            builder.claim("userId", customUser.getId()); // Añade el ID del usuario como claim.
+        }
+
+        // Firma el token con la clave secreta y lo genera como string.
+        return builder.signWith(getSigningKey()).compact();
     }
 
     // Genera un nuevo token de acceso a partir de un token de refresco válido (no usado actualmente).
@@ -71,13 +84,19 @@ public class JwtUtil {
         if (validateToken(refreshToken)) {
             // Extrae el username del token de refresco.
             String username = getUsernameFromToken(refreshToken);
-            // Genera un nuevo token de acceso con expiración estándar.
-            return Jwts.builder()
+            // Construye el nuevo token de acceso con expiración estándar.
+            JwtBuilder builder = Jwts.builder()
                     .subject(username)
                     .issuedAt(new Date())
-                    .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-                    .signWith(getSigningKey())
-                    .compact();
+                    .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs));
+
+            // Si el token de refresco contiene userId, lo incluye en el nuevo token de acceso.
+            Long userId = getUserIdFromToken(refreshToken);
+            if (userId != null) {
+                builder.claim("userId", userId);
+            }
+
+            return builder.signWith(getSigningKey()).compact();
         }
         throw new RuntimeException("Invalid refresh token");
     }
@@ -119,6 +138,57 @@ public class JwtUtil {
                 .verifyWith((SecretKey) getSigningKey())
                 .build().parseSignedClaims(token)
                 .getPayload().getSubject();
+    }
+
+    // Extrae el ID del usuario de un token JWT válido (devuelve null si no existe el claim).
+    public Long getUserIdFromToken(String token) {
+        try {
+            // Parsea el token y obtiene los claims para extraer el userId.
+            Claims claims = Jwts.parser()
+                    .verifyWith((SecretKey) getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            // Obtiene el claim "userId" como Long (devuelve null si no existe).
+            return claims.get("userId", Long.class);
+        } catch (Exception e) {
+            logger.error("Error extracting userId from token: {}", e.getMessage());
+            return null; // Devuelve null si hay algún error al extraer el ID.
+        }
+    }
+
+    // Extrae los roles de un token JWT válido (devuelve lista vacía si no existen).
+    @SuppressWarnings("unchecked")
+    public List<String> getRolesFromToken(String token) {
+        try {
+            // Parsea el token y obtiene los claims para extraer los roles.
+            Claims claims = Jwts.parser()
+                    .verifyWith((SecretKey) getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            // Obtiene el claim "roles" como lista de strings.
+            return (List<String>) claims.get("roles");
+        } catch (Exception e) {
+            logger.error("Error extracting roles from token: {}", e.getMessage());
+            return List.of(); // Devuelve lista vacía si hay algún error al extraer los roles.
+        }
+    }
+
+    // Extrae la fecha de expiración de un token JWT válido.
+    public Date getExpirationDateFromToken(String token) {
+        try {
+            // Parsea el token y obtiene la fecha de expiración.
+            return Jwts.parser()
+                    .verifyWith((SecretKey) getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .getExpiration();
+        } catch (Exception e) {
+            logger.error("Error extracting expiration date from token: {}", e.getMessage());
+            return null; // Devuelve null si hay algún error al extraer la fecha.
+        }
     }
 
     // Crea la clave de firma a partir de jwt.secret (decodificada de Base64).

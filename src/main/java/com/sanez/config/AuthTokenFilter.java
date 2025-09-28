@@ -24,14 +24,16 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     // Logger para registrar eventos y errores de autenticación.
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
-    // Inyección de dependencias: utilidades JWT y servicio de usuarios.
-    @Autowired
-    private JwtUtil jwtUtil;
 
-    @Autowired
-    private UserDetailsService userDetailsService;
+    private final JwtUtil jwtUtil;
+    private final UserDetailsService userDetailsService;
 
-    // Método principal que procesa cada solicitud HTTP.
+    public AuthTokenFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
+        this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService;
+    }
+
+    // Método principal que procesa cada solicitud HTTP
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {

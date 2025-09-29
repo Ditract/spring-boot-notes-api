@@ -23,9 +23,6 @@ public class Usuario {
     private String email;
 
     @Column(nullable = false)
-    private String nombre;
-
-    @Column(nullable = false)
     private String password;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)

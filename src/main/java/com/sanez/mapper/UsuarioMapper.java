@@ -15,7 +15,6 @@ public class UsuarioMapper {
         }
         UsuarioResponseDTO dto = new UsuarioResponseDTO();
         dto.setId(usuario.getId());
-        dto.setNombre(usuario.getNombre());
         dto.setEmail(usuario.getEmail());
         dto.setRoles(usuario.getRoles().stream().map(Rol::getNombre).collect(Collectors.toSet()));
         return dto;
@@ -26,7 +25,6 @@ public class UsuarioMapper {
             return null;
         }
         Usuario usuario = new Usuario();
-        usuario.setNombre(dto.getNombre());
         usuario.setEmail(dto.getEmail());
         usuario.setPassword(dto.getPassword());
         return usuario;

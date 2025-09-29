@@ -21,7 +21,8 @@ public class Perfil {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String nombreCompleto;
+    @Column(nullable = false)
+    private String nombre;
 
     @ElementCollection
     @CollectionTable(name = "perfil_notas_favoritas", joinColumns = @JoinColumn(name = "perfil_id"))

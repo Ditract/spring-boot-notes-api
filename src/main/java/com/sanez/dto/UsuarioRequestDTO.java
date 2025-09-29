@@ -13,9 +13,6 @@ import java.util.Set;
 @Setter
 public class UsuarioRequestDTO {
 
-    @NotBlank(message = "El nombre es obligatorio")
-    @Size(min = 3, max = 40, message = "El nombre debe tener entre 3 a 40 caracteres")
-    private String nombre;
 
     @NotBlank(message = "El email es obligatorio")
     @Email(message = "El email debe tener un formato válido")

@@ -9,7 +9,7 @@ import java.util.List;
 public class PerfilResponseDTO {
 
     private Long id;
-    private String nombreCompleto;
+    private String nombre;
     private List<Long> notasFavoritas;
 
 

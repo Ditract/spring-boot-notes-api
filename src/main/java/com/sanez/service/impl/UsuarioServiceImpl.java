@@ -80,6 +80,6 @@ public class UsuarioServiceImpl implements UsuarioService {
     public void eliminarUsuario(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
-        usuarioRepository.deleteById(id);
+        usuarioRepository.delete(usuario);
     }
 }

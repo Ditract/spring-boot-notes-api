@@ -9,10 +9,14 @@ import com.sanez.model.Usuario;
 import com.sanez.repository.NotaRepository;
 import com.sanez.repository.PerfilRepository;
 import com.sanez.repository.UsuarioRepository;
+import com.sanez.security.service.CustomUserDetails;
 import com.sanez.service.PerfilService;
+import jakarta.transaction.Transactional;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 public class PerfilServiceImpl implements PerfilService {
 
     private final PerfilRepository perfilRepository;
@@ -30,16 +34,16 @@ public class PerfilServiceImpl implements PerfilService {
 
 
     @Override
-    public PerfilResponseDTO obtenerPerfilPorUsuarioId(Long usuarioId) {
-
+    public PerfilResponseDTO obtenerMiPerfil() {
+        Long usuarioId = obtenerIdUsuarioAutenticado();
         Perfil perfil = validarYObtenerPerfilPorUsuarioId(usuarioId);
 
         return perfilMapper.toResponseDTO(perfil);
     }
 
     @Override
-    public PerfilResponseDTO actualizarPerfil(Long usuarioId, PerfilRequestDTO perfilRequestDTO) {
-
+    public PerfilResponseDTO actualizarMiPerfil(PerfilRequestDTO perfilRequestDTO) {
+        Long usuarioId = obtenerIdUsuarioAutenticado();
         Perfil perfil = validarYObtenerPerfilPorUsuarioId(usuarioId);
 
         perfilMapper.updateFromRequestDTO(perfilRequestDTO, perfil);
@@ -49,14 +53,13 @@ public class PerfilServiceImpl implements PerfilService {
     }
 
     @Override
-    public void agregarFavorita(Long usuarioId, Long notaId) {
+    public void agregarNotaFavorita(Long notaId) {
 
+        Long usuarioId = obtenerIdUsuarioAutenticado();
         Perfil perfil = validarYObtenerPerfilPorUsuarioId(usuarioId);
 
-        //Verificar si la nota existe y pertenece al usuario
-        notaRepository.findById(notaId)
-                .filter(nota -> nota.getUsuario().getId().equals(usuarioId))
-                .orElseThrow(() -> new RecursoNoEncontradoException("Nota no encontrada o no pertenece al Usuario"));
+        validarNotaPerteneceAlUsuario(notaId, usuarioId);
+
         if (!perfil.getNotasFavoritas().contains(notaId)) {
             perfil.getNotasFavoritas().add(notaId);
             perfilRepository.save(perfil);
@@ -64,9 +67,11 @@ public class PerfilServiceImpl implements PerfilService {
     }
 
     @Override
-    public void removerFavorita(Long usuarioId, Long notaId) {
-
+    public void removerNotaFavorita(Long notaId) {
+        Long usuarioId = obtenerIdUsuarioAutenticado();
         Perfil perfil = validarYObtenerPerfilPorUsuarioId(usuarioId);
+
+        validarNotaPerteneceAlUsuario(notaId, usuarioId);
 
         perfil.getNotasFavoritas().remove(notaId);
         perfilRepository.save(perfil);
@@ -74,8 +79,17 @@ public class PerfilServiceImpl implements PerfilService {
 
 
 
+    // ============================================
+    // MÉTODOS PRIVADOS AUXILIARES
+    // ============================================
 
-    // Obtiene el perfil del usuario o lanza excepción si no existe
+    private void validarNotaPerteneceAlUsuario(Long notaId, Long usuarioId) {
+        notaRepository.findById(notaId)
+                .filter(nota -> nota.getUsuario().getId().equals(usuarioId))
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Nota no encontrada o no pertenece al usuario."));
+    }
+
     private Perfil validarYObtenerPerfilPorUsuarioId(Long usuarioId){
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
@@ -86,5 +100,13 @@ public class PerfilServiceImpl implements PerfilService {
         }
 
         return perfil;
+    }
+
+    private Long obtenerIdUsuarioAutenticado() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof CustomUserDetails userDetails){
+            return userDetails.getId();
+        }
+        throw new RecursoNoEncontradoException("Error al resolver la información del usuario");
     }
 }

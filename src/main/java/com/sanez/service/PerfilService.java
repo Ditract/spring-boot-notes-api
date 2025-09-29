@@ -4,8 +4,8 @@ import com.sanez.dto.PerfilRequestDTO;
 import com.sanez.dto.PerfilResponseDTO;
 
 public interface PerfilService {
-    PerfilResponseDTO obtenerPerfilPorUsuarioId(Long usuarioId);
-    PerfilResponseDTO actualizarPerfil(Long usuarioId, PerfilRequestDTO perfilRequestDTO);
-    void agregarFavorita(Long usuarioId, Long notaId);
-    void removerFavorita(Long usuarioId, Long notaId);
+    PerfilResponseDTO obtenerMiPerfil();
+    PerfilResponseDTO actualizarMiPerfil(PerfilRequestDTO perfilRequestDTO);
+    void agregarNotaFavorita(Long notaId);
+    void removerNotaFavorita(Long notaId);
 }

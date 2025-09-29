@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/perfiles")
+@RequestMapping("/api/perfiles")
 public class PerfilController {
 
     private final PerfilService perfilService;
@@ -17,16 +17,30 @@ public class PerfilController {
         this.perfilService = perfilService;
     }
 
-    @GetMapping("/{usuarioId}")
-    public ResponseEntity<PerfilResponseDTO> obtenerPerfil(@PathVariable Long usuarioId){
-        PerfilResponseDTO perfilResponseDTO = perfilService.obtenerPerfilPorUsuarioId(usuarioId);
-        return ResponseEntity.ok(perfilResponseDTO);
+    // ============================================
+    // ENDPOINTS PARA USUARIOS AUTENTICADOS
+    // ============================================
+
+    @GetMapping("/mi-perfil")
+    public ResponseEntity<PerfilResponseDTO> obtenerMiPerfil() {
+        return ResponseEntity.ok(perfilService.obtenerMiPerfil());
     }
 
-    @PutMapping("/{usuarioId}")
-    public ResponseEntity<PerfilResponseDTO> updatePerfil(@PathVariable Long usuarioId,
-                                                          @Valid @RequestBody PerfilRequestDTO requestDTO) {
-        PerfilResponseDTO actualizarPerfil = perfilService.actualizarPerfil(usuarioId, requestDTO);
-        return ResponseEntity.ok(actualizarPerfil);
+    @PutMapping("/mi-perfil")
+    public ResponseEntity<PerfilResponseDTO> actualizarMiPerfil(
+            @Valid @RequestBody PerfilRequestDTO perfilRequestDTO) {
+        return ResponseEntity.ok(perfilService.actualizarMiPerfil(perfilRequestDTO));
+    }
+
+    @PostMapping("/favoritas/{notaId}")
+    public ResponseEntity<Void> agregarNotaFavorita(@PathVariable Long notaId) {
+        perfilService.agregarNotaFavorita(notaId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/favoritas/{notaId}")
+    public ResponseEntity<Void> removerNotaFavorita(@PathVariable Long notaId) {
+        perfilService.removerNotaFavorita(notaId);
+        return ResponseEntity.noContent().build();
     }
 }

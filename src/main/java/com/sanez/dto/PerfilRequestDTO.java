@@ -9,9 +9,9 @@ import java.util.List;
 @Data
 public class PerfilRequestDTO {
 
-    @NotBlank(message = "Debe escribir su nombre completo")
-    @Size(min = 5, max = 50, message = "Su nombre completo debe tener entre 5 y 50 caracteres")
-    private String nombreCompleto;
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(min = 3, max = 40, message = "El nombre debe tener entre 3 a 40 caracteres")
+    private String nombre;
 
     private List<Long> notasFavoritas;
 

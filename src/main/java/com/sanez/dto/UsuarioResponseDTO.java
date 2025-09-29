@@ -10,7 +10,6 @@ import java.util.Set;
 public class UsuarioResponseDTO {
 
     private Long id;
-    private String nombre;
     private String email;
     private Set<String> roles;
 }

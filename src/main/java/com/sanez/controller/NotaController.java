@@ -1,6 +1,8 @@
 package com.sanez.controller;
 
-import com.sanez.dto.NotaDTO;
+import com.sanez.dto.nota.NotaRequestDTO;
+import com.sanez.dto.nota.NotaResponseDTO;
+import com.sanez.dto.nota.NotaUpdateDTO;
 import com.sanez.service.NotaService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -21,20 +23,28 @@ public class NotaController {
     }
 
     @PostMapping
-    public ResponseEntity<NotaDTO> crearNota(@Valid @RequestBody NotaDTO notaDTO) {
-        NotaDTO createdNota = notaService.crearNota(notaDTO);
+    public ResponseEntity<NotaResponseDTO> crearNota(@Valid @RequestBody NotaRequestDTO notaRequestDTO) {
+        NotaResponseDTO notaCreada = notaService.crearNota(notaRequestDTO);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(createdNota.getId())
+                .buildAndExpand(notaCreada.getId())
                 .toUri();
-        return ResponseEntity.created(location).body(createdNota);
+        return ResponseEntity.created(location).body(notaCreada);
     }
 
     @GetMapping
-    public ResponseEntity<List<NotaDTO>> obtenerNotasPorUsuario() {
+    public ResponseEntity<List<NotaResponseDTO>> obtenerNotasPorUsuario() {
         return ResponseEntity.ok(notaService.obtenerNotasPorUsuario());
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<NotaResponseDTO> editarNota(@PathVariable Long id,
+                                                      @Valid @RequestBody NotaUpdateDTO notaUpdateDTO) {
+        NotaResponseDTO notaActualizada = notaService.editarNota(id, notaUpdateDTO);
+        return ResponseEntity.ok(notaActualizada);
+    }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarNota(@PathVariable Long id) {

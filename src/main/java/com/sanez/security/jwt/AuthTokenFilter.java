@@ -16,13 +16,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-// Filtro que procesa tokens JWT en cada solicitud HTTP para autenticar usuarios.
 @Component
 public class AuthTokenFilter extends OncePerRequestFilter {
 
-    // Logger para registrar eventos y errores de autenticación.
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
-
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
@@ -32,10 +29,15 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
-    // Método principal que procesa cada solicitud HTTP
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        // IMPORTANTE: Permitir peticiones OPTIONS (CORS preflight) sin procesar JWT
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // Obtiene el path de la solicitud (ej. "/api/notas").
         String path = request.getServletPath();

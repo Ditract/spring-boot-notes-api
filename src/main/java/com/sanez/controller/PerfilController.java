@@ -1,7 +1,7 @@
 package com.sanez.controller;
 
-import com.sanez.dto.PerfilRequestDTO;
-import com.sanez.dto.PerfilResponseDTO;
+import com.sanez.dto.perfil.PerfilRequestDTO;
+import com.sanez.dto.perfil.PerfilResponseDTO;
 import com.sanez.service.PerfilService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

@@ -1,7 +1,7 @@
 package com.sanez.service.impl;
 
-import com.sanez.dto.UsuarioRequestDTO;
-import com.sanez.dto.UsuarioResponseDTO;
+import com.sanez.dto.usuario.UsuarioRequestDTO;
+import com.sanez.dto.usuario.UsuarioResponseDTO;
 import com.sanez.exception.EmailYaRegistradoException;
 import com.sanez.exception.RecursoNoEncontradoException;
 import com.sanez.mapper.UsuarioMapper;
@@ -53,6 +53,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         //Crear perfil automáticamente
         Perfil perfil = new Perfil();
         perfil.setUsuario(usuario);
+        perfil.setNombre("");
         usuario.setPerfil(perfil);
 
         Usuario usuarioGuardado = usuarioRepository.save(usuario);

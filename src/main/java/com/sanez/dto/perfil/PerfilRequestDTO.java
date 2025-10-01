@@ -1,12 +1,15 @@
-package com.sanez.dto;
+package com.sanez.dto.perfil;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.*;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class PerfilRequestDTO {
 
     @NotBlank(message = "El nombre es obligatorio")

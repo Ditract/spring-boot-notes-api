@@ -1,7 +1,7 @@
 package com.sanez.service;
 
-import com.sanez.dto.PerfilRequestDTO;
-import com.sanez.dto.PerfilResponseDTO;
+import com.sanez.dto.perfil.PerfilRequestDTO;
+import com.sanez.dto.perfil.PerfilResponseDTO;
 
 public interface PerfilService {
     PerfilResponseDTO obtenerMiPerfil();

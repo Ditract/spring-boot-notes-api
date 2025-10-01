@@ -1,7 +1,7 @@
 package com.sanez.security.service;
 
 
-import com.sanez.exception.CredencialesInvalidosException;
+import com.sanez.exception.AccesoNoAutorizadoException;
 import com.sanez.model.Usuario;
 import com.sanez.repository.UsuarioRepository;
 import org.slf4j.Logger;
@@ -26,13 +26,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws CredencialesInvalidosException {
+    public UserDetails loadUserByUsername(String email) throws AccesoNoAutorizadoException {
 
         //Buscamos usuario en DB
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> {
                     logger.warn("Intento de login fallido para email: {}", email); // log interno
-                    return new CredencialesInvalidosException("Credenciales inválidas");
+                    return new AccesoNoAutorizadoException("Credenciales inválidas");
                 });
 
         // Convertir roles a grantedAuthority

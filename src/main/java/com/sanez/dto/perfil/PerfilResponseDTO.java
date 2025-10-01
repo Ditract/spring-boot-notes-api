@@ -1,11 +1,14 @@
-package com.sanez.dto;
+package com.sanez.dto.perfil;
 
 
-import lombok.Data;
+import lombok.*;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class PerfilResponseDTO {
 
     private Long id;

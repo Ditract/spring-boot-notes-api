@@ -1,7 +1,7 @@
 package com.sanez.controller;
 
-import com.sanez.dto.UsuarioRequestDTO;
-import com.sanez.dto.UsuarioResponseDTO;
+import com.sanez.dto.usuario.UsuarioRequestDTO;
+import com.sanez.dto.usuario.UsuarioResponseDTO;
 import com.sanez.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +23,13 @@ public class UsuarioController {
 
     @PostMapping
     public ResponseEntity<UsuarioResponseDTO> crearUsuario(@Valid @RequestBody UsuarioRequestDTO usuarioRequestDTO) {
-        UsuarioResponseDTO createdUsuario = usuarioService.crearUsuario(usuarioRequestDTO);
+        UsuarioResponseDTO crearUsuario = usuarioService.crearUsuario(usuarioRequestDTO);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(createdUsuario.getId())
+                .buildAndExpand(crearUsuario.getId())
                 .toUri();
-        return ResponseEntity.created(location).body(createdUsuario);
+        return ResponseEntity.created(location).body(crearUsuario);
     }
 
     @GetMapping("/{id}")

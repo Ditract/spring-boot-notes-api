@@ -47,8 +47,8 @@ public class GlobalExceptionHandler {
     }
 
     // Maneja credenciales inválidas en login (401)
-    @ExceptionHandler(CredencialesInvalidosException.class)
-    public ResponseEntity<ErrorResponse> manejarCredencialesinvalidas(CredencialesInvalidosException ex,
+    @ExceptionHandler(AccesoNoAutorizadoException.class)
+    public ResponseEntity<ErrorResponse> manejarCredencialesinvalidas(AccesoNoAutorizadoException ex,
                                                                       WebRequest request){
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())

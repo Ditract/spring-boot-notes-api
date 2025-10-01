@@ -1,25 +1,23 @@
-package com.sanez.dto;
-
+package com.sanez.dto.nota;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Getter
 @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotaDTO {
-
-    private Long id;
+public class NotaRequestDTO {
 
     @NotBlank(message = "El título no puede estar vacío")
     @Size(max = 100, message = "El título no puede superar los 100 caracteres")
     private String titulo;
 
     @NotBlank(message = "El contenido no puede estar vacío")
-    @Size(max = 1000, message = "El contenido no puede superar los 1000 caracteres")
+    @Size(max = 10000, message = "El contenido no puede superar las 1400 palabras.")
     private String contenido;
-
-    private Long usuarioId;
 }

@@ -1,23 +1,25 @@
 package com.sanez.service.impl;
 
-import com.sanez.dto.NotaDTO;
+import com.sanez.dto.nota.NotaRequestDTO;
+import com.sanez.dto.nota.NotaResponseDTO;
+import com.sanez.dto.nota.NotaUpdateDTO;
+import com.sanez.exception.AccesoNoAutorizadoException;
+import com.sanez.exception.OperacionNoPermitidaException;
 import com.sanez.exception.RecursoNoEncontradoException;
 import com.sanez.mapper.NotaMapper;
 import com.sanez.model.Nota;
 import com.sanez.model.Usuario;
 import com.sanez.repository.NotaRepository;
 import com.sanez.repository.UsuarioRepository;
+import com.sanez.security.service.CustomUserDetails;
 import com.sanez.service.NotaService;
-import jakarta.transaction.Transactional;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
-@Transactional
 public class NotaServiceImpl implements NotaService {
 
     private final NotaRepository notaRepository;
@@ -28,53 +30,79 @@ public class NotaServiceImpl implements NotaService {
         this.usuarioRepository = usuarioRepository;
     }
 
+    // Crear nota
     @Override
-    public NotaDTO crearNota(NotaDTO notaDTO) {
-        Long usuarioId = getUsuarioIdFromToken();
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
+    @Transactional
+    public NotaResponseDTO crearNota(NotaRequestDTO notaRequestDTO) {
+        Long usuarioId = obtenerIdUsuarioAutenticado();
 
-        Nota nota = NotaMapper.toEntity(notaDTO);
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Usuario con id " + usuarioId + " no encontrado"));
+
+        Nota nota = NotaMapper.toEntity(notaRequestDTO);
         nota.setUsuario(usuario);
 
         Nota notaGuardada = notaRepository.save(nota);
-        return NotaMapper.toDTO(notaGuardada);
+        return NotaMapper.toResponseDTO(notaGuardada);
     }
 
+    // Obtener notas por usuario (solo lectura)
     @Override
-    public List<NotaDTO> obtenerNotasPorUsuario() {
-        Long usuarioId = getUsuarioIdFromToken();
-        List<Nota> notas = notaRepository.findByUsuarioId(usuarioId);
+    @Transactional(readOnly = true)
+    public List<NotaResponseDTO> obtenerNotasPorUsuario() {
+        Long usuarioId = obtenerIdUsuarioAutenticado();
 
-        if (!notas.isEmpty()) {
-            return notas.stream()
-                    .map(NotaMapper::toDTO)
-                    .collect(Collectors.toList());
-        }
-
-        boolean usuarioExiste = usuarioRepository.existsById(usuarioId);
-        if (!usuarioExiste) {
-            throw new RecursoNoEncontradoException("Usuario con id " + usuarioId + " no existe");
-        }
-
-        return Collections.emptyList();
+        return notaRepository.findByUsuarioId(usuarioId).stream()
+                .map(NotaMapper::toResponseDTO)
+                .toList();
     }
 
+    // Editar nota
     @Override
-    public void eliminarNota(Long id) {
-        Long usuarioId = getUsuarioIdFromToken();
-        Nota nota = notaRepository.findById(id)
+    @Transactional
+    public NotaResponseDTO editarNota(Long notaId, NotaUpdateDTO notaUpdateDTO) {
+        Long usuarioId = obtenerIdUsuarioAutenticado();
+        Nota nota = obtenerNotaValidaParaUsuario(notaId, usuarioId);
+
+        NotaMapper.actualizarNotaDesdeDTO(nota, notaUpdateDTO);
+
+        Nota notaActualizada = notaRepository.save(nota);
+        return NotaMapper.toResponseDTO(notaActualizada);
+    }
+
+    // Eliminar nota
+    @Override
+    @Transactional
+    public void eliminarNota(Long notaId) {
+        Long usuarioId = obtenerIdUsuarioAutenticado();
+        Nota nota = obtenerNotaValidaParaUsuario(notaId, usuarioId);
+
+        notaRepository.delete(nota);
+    }
+
+    // ============================================
+    // MÉTODOS PRIVADOS AUXILIARES
+    // ============================================
+
+    // Obtiene el ID del usuario autenticado o lanza 401
+    private Long obtenerIdUsuarioAutenticado() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof CustomUserDetails userDetails) {
+            return userDetails.getId();
+        }
+        throw new AccesoNoAutorizadoException("Usuario no autenticado");
+    }
+
+    // Verifica que la nota exista y pertenezca al usuario
+    private Nota obtenerNotaValidaParaUsuario(Long notaId, Long usuarioId) {
+        Nota nota = notaRepository.findById(notaId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Nota no encontrada"));
-        if (!nota.getUsuario().getId().equals(usuarioId)) {
-            throw new RuntimeException("No tienes permiso para eliminar esta nota");
-        }
-        notaRepository.deleteById(id);
-    }
 
-    private Long getUsuarioIdFromToken() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return usuarioRepository.findByEmail(username)
-                .map(Usuario::getId)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado en la base de datos"));
+        if (!nota.getUsuario().getId().equals(usuarioId)) {
+            throw new OperacionNoPermitidaException("No tienes permiso para esta nota");
+        }
+
+        return nota;
     }
 }

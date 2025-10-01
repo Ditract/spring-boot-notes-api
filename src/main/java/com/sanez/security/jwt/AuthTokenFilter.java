@@ -1,4 +1,4 @@
-package com.sanez.config;
+package com.sanez.security.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,24 +16,28 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-// Filtro que procesa tokens JWT en cada solicitud HTTP para autenticar usuarios.
 @Component
 public class AuthTokenFilter extends OncePerRequestFilter {
 
-    // Logger para registrar eventos y errores de autenticación.
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
-    // Inyección de dependencias: utilidades JWT y servicio de usuarios.
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
+    private final UserDetailsService userDetailsService;
 
-    @Autowired
-    private UserDetailsService userDetailsService;
+    public AuthTokenFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
+        this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService;
+    }
 
-    // Método principal que procesa cada solicitud HTTP.
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        // IMPORTANTE: Permitir peticiones OPTIONS (CORS preflight) sin procesar JWT
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // Obtiene el path de la solicitud (ej. "/api/notas").
         String path = request.getServletPath();

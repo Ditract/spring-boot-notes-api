@@ -23,9 +23,6 @@ public class Usuario {
     private String email;
 
     @Column(nullable = false)
-    private String nombre;
-
-    @Column(nullable = false)
     private String password;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -38,4 +35,7 @@ public class Usuario {
             inverseJoinColumns = @JoinColumn(name = "rol_id")
     )
     private Set<Rol> roles = new HashSet<>();
+
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Perfil perfil;
 }

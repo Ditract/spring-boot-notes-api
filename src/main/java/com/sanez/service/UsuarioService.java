@@ -1,7 +1,7 @@
 package com.sanez.service;
 
-import com.sanez.dto.UsuarioRequestDTO;
-import com.sanez.dto.UsuarioResponseDTO;
+import com.sanez.dto.usuario.UsuarioRequestDTO;
+import com.sanez.dto.usuario.UsuarioResponseDTO;
 
 import java.util.List;
 

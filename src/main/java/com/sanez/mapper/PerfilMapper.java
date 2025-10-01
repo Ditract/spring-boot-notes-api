@@ -1,7 +1,7 @@
 package com.sanez.mapper;
 
-import com.sanez.dto.PerfilRequestDTO;
-import com.sanez.dto.PerfilResponseDTO;
+import com.sanez.dto.perfil.PerfilRequestDTO;
+import com.sanez.dto.perfil.PerfilResponseDTO;
 import com.sanez.model.Perfil;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +13,7 @@ public class PerfilMapper {
         PerfilResponseDTO perfilResponseDTO = new PerfilResponseDTO();
         perfilResponseDTO.setId(perfil.getId());
         perfilResponseDTO.setNombre(perfil.getNombre());
-        perfil.setNotasFavoritas(perfilResponseDTO.getNotasFavoritas());
+        perfilResponseDTO.setNotasFavoritas(perfil.getNotasFavoritas());
 
         return perfilResponseDTO;
     }

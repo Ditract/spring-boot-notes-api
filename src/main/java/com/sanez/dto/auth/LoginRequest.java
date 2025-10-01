@@ -1,13 +1,17 @@
-package com.sanez.dto;
+package com.sanez.dto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
 @Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class LoginRequest {
 
     @NotBlank(message = "El email es obligatorio")

@@ -1,7 +1,7 @@
 package com.sanez.controller;
 
-import com.sanez.dto.UsuarioRequestDTO;
-import com.sanez.dto.UsuarioResponseDTO;
+import com.sanez.dto.usuario.UsuarioRequestDTO;
+import com.sanez.dto.usuario.UsuarioResponseDTO;
 import com.sanez.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

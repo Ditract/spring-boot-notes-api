@@ -1,8 +1,11 @@
 package com.sanez.controller;
 
+import com.sanez.dto.auth.LoginRequest;
+import com.sanez.dto.auth.LoginResponse;
+import com.sanez.dto.usuario.UsuarioRequestDTO;
+import com.sanez.dto.usuario.UsuarioResponseDTO;
 import com.sanez.security.jwt.JwtUtil;
-import com.sanez.dto.*;
-import com.sanez.exception.CredencialesInvalidosException;
+import com.sanez.exception.AccesoNoAutorizadoException;
 import com.sanez.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -43,7 +46,7 @@ public class AuthController {
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         } catch (AuthenticationException exception) {
-            throw new CredencialesInvalidosException("Credenciales inválidos");
+            throw new AccesoNoAutorizadoException("Credenciales inválidos");
         }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);

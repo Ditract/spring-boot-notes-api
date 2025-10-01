@@ -1,7 +1,7 @@
 package com.sanez.service.impl;
 
-import com.sanez.dto.PerfilRequestDTO;
-import com.sanez.dto.PerfilResponseDTO;
+import com.sanez.dto.perfil.PerfilRequestDTO;
+import com.sanez.dto.perfil.PerfilResponseDTO;
 import com.sanez.exception.RecursoNoEncontradoException;
 import com.sanez.mapper.PerfilMapper;
 import com.sanez.model.Perfil;

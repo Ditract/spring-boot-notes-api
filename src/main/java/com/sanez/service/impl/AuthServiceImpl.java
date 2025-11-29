@@ -75,4 +75,22 @@ public class AuthServiceImpl implements AuthService {
 
         return UsuarioMapper.toResponseDTO(usuarioGuardado);
     }
+
+    @Override
+    public void verificarCuenta(String token) {
+        Usuario usuario = usuarioRepository.findByVerificationToken(token)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Token de verificación inválido"));
+
+        // Verificar si el token ha expirado
+        if (usuario.getTokenExpiration().isBefore(LocalDateTime.now())) {
+            throw new RecursoNoEncontradoException("El token de verificación ha expirado");
+        }
+
+        // Activar usuario
+        usuario.setEnabled(true);
+        usuario.setVerificationToken(null); // Eliminar token después de usar
+        usuario.setTokenExpiration(null);
+
+        usuarioRepository.save(usuario);
+    }
 }

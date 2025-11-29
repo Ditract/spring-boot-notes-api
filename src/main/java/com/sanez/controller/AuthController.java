@@ -6,7 +6,7 @@ import com.sanez.dto.usuario.UsuarioRequestDTO;
 import com.sanez.dto.usuario.UsuarioResponseDTO;
 import com.sanez.security.jwt.JwtUtil;
 import com.sanez.exception.AccesoNoAutorizadoException;
-import com.sanez.service.UsuarioService;
+import com.sanez.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,14 +28,13 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
-    private final UsuarioService usuarioService;
+    private final AuthService authService;
 
     public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil,
-                          UsuarioService usuarioService) {
+                          AuthService authService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
-        this.usuarioService = usuarioService;
-
+        this.authService = authService;
     }
 
     //Inicio de sesión
@@ -65,9 +64,9 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody UsuarioRequestDTO usuarioRequestDTO) {
 
-        UsuarioResponseDTO crearUsuario = usuarioService.crearUsuario(usuarioRequestDTO);
+        UsuarioResponseDTO usuarioCreado = authService.registrarUsuario(usuarioRequestDTO);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(crearUsuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioCreado);
     }
 
 }

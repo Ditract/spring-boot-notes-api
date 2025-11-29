@@ -86,4 +86,15 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    // Reenvío de email de verificación
+    @PostMapping("/resend-verification")
+    public ResponseEntity<?> resendVerificationEmail(@RequestParam("email") String email) {
+        authService.reenviarEmailVerificacion(email);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("mensaje", "Email de verificación reenviado. Por favor, revisa tu correo.");
+
+        return ResponseEntity.ok(response);
+    }
+
 }

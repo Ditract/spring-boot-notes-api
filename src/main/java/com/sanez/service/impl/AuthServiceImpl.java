@@ -93,4 +93,25 @@ public class AuthServiceImpl implements AuthService {
 
         usuarioRepository.save(usuario);
     }
+
+    @Override
+    public void reenviarEmailVerificacion(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
+
+        // Verificar si el usuario ya está verificado
+        if (usuario.isEnabled()) {
+            throw new IllegalStateException("La cuenta ya está verificada");
+        }
+
+        // Generar nuevo token de verificación
+        String nuevoToken = UUID.randomUUID().toString();
+        usuario.setVerificationToken(nuevoToken);
+        usuario.setTokenExpiration(LocalDateTime.now().plusHours(24)); // Nuevo token válido por 24 horas
+
+        usuarioRepository.save(usuario);
+
+        // Reenviar email de verificación
+        emailService.enviarEmailVerificacion(usuario.getEmail(), nuevoToken);
+    }
 }

@@ -3,6 +3,7 @@ package com.sanez.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +25,15 @@ public class Usuario {
 
     @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
+    private boolean enabled = false; // Usuario inactivo por defecto hasta verificar email
+
+    @Column(length = 64)
+    private String verificationToken;
+
+    @Column
+    private LocalDateTime tokenExpiration;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Nota> notas;

@@ -19,7 +19,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -66,7 +68,33 @@ public class AuthController {
 
         UsuarioResponseDTO usuarioCreado = authService.registrarUsuario(usuarioRequestDTO);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioCreado);
+        Map<String, String> response = new HashMap<>();
+        response.put("mensaje", "Usuario registrado exitosamente. Por favor, verifica tu correo electrónico.");
+        response.put("email", usuarioCreado.getEmail());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    //Verificación de cuenta por email
+    @GetMapping("/verify")
+    public ResponseEntity<?> verifyAccount(@RequestParam("token") String token) {
+        authService.verificarCuenta(token);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("mensaje", "Cuenta verificada exitosamente. Ya puedes iniciar sesión.");
+
+        return ResponseEntity.ok(response);
+    }
+
+    // Reenvío de email de verificación
+    @PostMapping("/resend-verification")
+    public ResponseEntity<?> resendVerificationEmail(@RequestParam("email") String email) {
+        authService.reenviarEmailVerificacion(email);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("mensaje", "Email de verificación reenviado. Por favor, revisa tu correo.");
+
+        return ResponseEntity.ok(response);
     }
 
 }

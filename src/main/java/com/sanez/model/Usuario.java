@@ -30,10 +30,16 @@ public class Usuario {
     private boolean enabled = false; // Usuario inactivo por defecto hasta verificar email
 
     @Column(length = 64)
-    private String verificationToken;
+    private String verificationToken; // Token para verificación de email
 
     @Column
-    private LocalDateTime tokenExpiration;
+    private LocalDateTime tokenExpiration; // Expiración del token de verificación
+
+    @Column(length = 64)
+    private String passwordResetToken; // Token para resetear contraseña
+
+    @Column
+    private LocalDateTime passwordResetTokenExpiration; // Expiración del token de reset
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Nota> notas;

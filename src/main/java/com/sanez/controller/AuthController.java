@@ -2,6 +2,7 @@ package com.sanez.controller;
 
 import com.sanez.dto.auth.LoginRequest;
 import com.sanez.dto.auth.LoginResponse;
+import com.sanez.dto.auth.ResetPasswordRequest;
 import com.sanez.dto.usuario.UsuarioRequestDTO;
 import com.sanez.dto.usuario.UsuarioResponseDTO;
 import com.sanez.security.jwt.JwtUtil;
@@ -93,6 +94,30 @@ public class AuthController {
 
         Map<String, String> response = new HashMap<>();
         response.put("mensaje", "Email de verificación reenviado. Por favor, revisa tu correo.");
+
+        return ResponseEntity.ok(response);
+    }
+
+    // Solicitud de recuperación de contraseña
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestParam("email") String email) {
+        authService.solicitarRecuperacionPassword(email);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("mensaje", "Si el correo existe, " +
+                "recibirás un email con instrucciones para restablecer tu contraseña.");
+
+        return ResponseEntity.ok(response);
+    }
+
+    // Resetear contraseña
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetearPassword(request);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("mensaje", "Contraseña restablecida exitosamente. " +
+                "Ya puedes iniciar sesión con tu nueva contraseña.");
 
         return ResponseEntity.ok(response);
     }

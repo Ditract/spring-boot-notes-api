@@ -1,5 +1,6 @@
 package com.sanez.service;
 
+import com.sanez.dto.auth.ResetPasswordRequest;
 import com.sanez.dto.usuario.UsuarioRequestDTO;
 import com.sanez.dto.usuario.UsuarioResponseDTO;
 
@@ -12,4 +13,6 @@ public interface AuthService {
     void reenviarEmailVerificacion(String email);
 
     void solicitarRecuperacionPassword(String email);
+
+    void resetearPassword(ResetPasswordRequest request);
 }

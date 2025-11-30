@@ -1,5 +1,6 @@
 package com.sanez.service.impl;
 
+import com.sanez.dto.auth.ResetPasswordRequest;
 import com.sanez.dto.usuario.UsuarioRequestDTO;
 import com.sanez.dto.usuario.UsuarioResponseDTO;
 import com.sanez.exception.EmailYaRegistradoException;
@@ -135,6 +136,27 @@ public class AuthServiceImpl implements AuthService {
         // Enviar email de recuperación
         emailService.enviarEmailRecuperacionPassword(usuario.getEmail(), token);
     }
+
+    @Override
+    public void resetearPassword(ResetPasswordRequest request) {
+        Usuario usuario = usuarioRepository.findByPasswordResetToken(request.getToken())
+                .orElseThrow(() -> new RecursoNoEncontradoException("Token de recuperación inválido"));
+
+        // Verificar si el token ha expirado
+        if (usuario.getPasswordResetTokenExpiration().isBefore(LocalDateTime.now())) {
+            throw new RecursoNoEncontradoException("El token de recuperación ha expirado");
+        }
+
+        // Actualizar contraseña (la validación de longitud ya la hace @Size en el DTO)
+        usuario.setPassword(passwordEncoder.encode(request.getNuevaPassword()));
+
+        // Eliminar token de recuperación después de usar (un solo uso)
+        usuario.setPasswordResetToken(null);
+        usuario.setPasswordResetTokenExpiration(null);
+
+        usuarioRepository.save(usuario);
+    }
+
 
 
 }

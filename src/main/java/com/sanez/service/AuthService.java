@@ -10,4 +10,6 @@ public interface AuthService {
     void verificarCuenta(String token);
 
     void reenviarEmailVerificacion(String email);
+
+    void solicitarRecuperacionPassword(String email);
 }

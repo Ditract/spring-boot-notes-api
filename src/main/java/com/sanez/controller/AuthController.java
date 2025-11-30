@@ -97,4 +97,16 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    // Solicitud de recuperación de contraseña
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestParam("email") String email) {
+        authService.solicitarRecuperacionPassword(email);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("mensaje", "Si el correo existe, " +
+                "recibirás un email con instrucciones para restablecer tu contraseña.");
+
+        return ResponseEntity.ok(response);
+    }
+
 }

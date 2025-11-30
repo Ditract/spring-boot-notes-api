@@ -147,7 +147,12 @@ public class AuthServiceImpl implements AuthService {
             throw new RecursoNoEncontradoException("El token de recuperación ha expirado");
         }
 
-        // Actualizar contraseña (la validación de longitud ya la hace @Size en el DTO)
+        // Validar que no se use la misma contraseña anterior
+        if (passwordEncoder.matches(request.getNuevaPassword(), usuario.getPassword())) {
+            throw new IllegalArgumentException("La nueva contraseña no puede ser igual a la anterior");
+        }
+
+        // Actualizar contraseña
         usuario.setPassword(passwordEncoder.encode(request.getNuevaPassword()));
 
         // Eliminar token de recuperación después de usar (un solo uso)

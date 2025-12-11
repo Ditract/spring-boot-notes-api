@@ -2,11 +2,12 @@ package com.sanez.controller;
 
 import com.sanez.dto.auth.LoginRequest;
 import com.sanez.dto.auth.LoginResponse;
+import com.sanez.dto.auth.ResetPasswordRequest;
 import com.sanez.dto.usuario.UsuarioRequestDTO;
 import com.sanez.dto.usuario.UsuarioResponseDTO;
 import com.sanez.security.jwt.JwtUtil;
 import com.sanez.exception.AccesoNoAutorizadoException;
-import com.sanez.service.UsuarioService;
+import com.sanez.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -28,14 +31,13 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
-    private final UsuarioService usuarioService;
+    private final AuthService authService;
 
     public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil,
-                          UsuarioService usuarioService) {
+                          AuthService authService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
-        this.usuarioService = usuarioService;
-
+        this.authService = authService;
     }
 
     //Inicio de sesión
@@ -65,9 +67,59 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody UsuarioRequestDTO usuarioRequestDTO) {
 
-        UsuarioResponseDTO crearUsuario = usuarioService.crearUsuario(usuarioRequestDTO);
+        UsuarioResponseDTO usuarioCreado = authService.registrarUsuario(usuarioRequestDTO);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(crearUsuario);
+        Map<String, String> response = new HashMap<>();
+        response.put("mensaje", "Usuario registrado exitosamente. Por favor, verifica tu correo electrónico.");
+        response.put("email", usuarioCreado.getEmail());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    //Verificación de cuenta por email
+    @GetMapping("/verify")
+    public ResponseEntity<?> verifyAccount(@RequestParam("token") String token) {
+        authService.verificarCuenta(token);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("mensaje", "Cuenta verificada exitosamente. Ya puedes iniciar sesión.");
+
+        return ResponseEntity.ok(response);
+    }
+
+    // Reenvío de email de verificación
+    @PostMapping("/resend-verification")
+    public ResponseEntity<?> resendVerificationEmail(@RequestParam("email") String email) {
+        authService.reenviarEmailVerificacion(email);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("mensaje", "Email de verificación reenviado. Por favor, revisa tu correo.");
+
+        return ResponseEntity.ok(response);
+    }
+
+    // Solicitud de recuperación de contraseña
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestParam("email") String email) {
+        authService.solicitarRecuperacionPassword(email);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("mensaje", "Si el correo existe, " +
+                "recibirás un email con instrucciones para restablecer tu contraseña.");
+
+        return ResponseEntity.ok(response);
+    }
+
+    // Resetear contraseña
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetearPassword(request);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("mensaje", "Contraseña restablecida exitosamente. " +
+                "Ya puedes iniciar sesión con tu nueva contraseña.");
+
+        return ResponseEntity.ok(response);
     }
 
 }

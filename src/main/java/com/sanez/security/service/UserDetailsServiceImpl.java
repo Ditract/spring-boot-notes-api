@@ -1,6 +1,5 @@
 package com.sanez.security.service;
 
-
 import com.sanez.exception.AccesoNoAutorizadoException;
 import com.sanez.model.Usuario;
 import com.sanez.repository.UsuarioRepository;
@@ -31,16 +30,20 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         //Buscamos usuario en DB
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> {
-                    logger.warn("Intento de login fallido para email: {}", email); // log interno
+                    logger.warn("Intento de login fallido para email: {}", email);
                     return new AccesoNoAutorizadoException("Credenciales inválidas");
                 });
+
+        // Verificar si el usuario ha confirmado su email
+        if (!usuario.isEnabled()) {
+            logger.warn("Intento de login con cuenta no verificada: {}", email);
+            throw new AccesoNoAutorizadoException("Cuenta no verificada. Por favor, verifica tu correo electrónico.");
+        }
 
         // Convertir roles a grantedAuthority
         Set<GrantedAuthority> authorities = usuario.getRoles().stream()
                 .map(rol -> new SimpleGrantedAuthority("ROLE_" + rol.getNombre()))
                 .collect(Collectors.toSet());
-
-
 
         return new CustomUserDetails(
                 usuario.getId(),

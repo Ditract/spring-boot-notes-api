@@ -31,19 +31,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
-    // Maneja el caso de email ya registrado (400)
+    // Maneja el caso de email ya registrado (409 Conflict)
     @ExceptionHandler(EmailYaRegistradoException.class)
     public ResponseEntity<ErrorResponse> manejarEmailYaRegistrado(EmailYaRegistradoException ex,
                                                                   WebRequest request){
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .error("Bad Request")
+                .status(HttpStatus.CONFLICT.value())
+                .error("Conflict")
                 .message(ex.getMessage())
                 .path(request.getDescription(false).replace("uri=", ""))
                 .build();
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
     // Maneja credenciales inválidas en login (401)

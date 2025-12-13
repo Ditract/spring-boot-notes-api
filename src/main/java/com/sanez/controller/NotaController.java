@@ -4,6 +4,13 @@ import com.sanez.dto.nota.NotaRequestDTO;
 import com.sanez.dto.nota.NotaResponseDTO;
 import com.sanez.dto.nota.NotaUpdateDTO;
 import com.sanez.service.NotaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +19,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
+@Tag(name = "Notas", description = "CRUD de notas del usuario autenticado")
+@SecurityRequirement(name = "Bearer Authentication")
 @RestController
 @RequestMapping("/api/notas")
 public class NotaController {
@@ -22,6 +31,13 @@ public class NotaController {
         this.notaService = notaService;
     }
 
+    @Operation(summary = "Crear nota", description = "Crea una nueva nota para el usuario autenticado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Nota creada exitosamente",
+                    content = @Content(schema = @Schema(implementation = NotaResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
+    })
     @PostMapping
     public ResponseEntity<NotaResponseDTO> crearNota(@Valid @RequestBody NotaRequestDTO notaRequestDTO) {
         NotaResponseDTO notaCreada = notaService.crearNota(notaRequestDTO);
@@ -33,11 +49,24 @@ public class NotaController {
         return ResponseEntity.created(location).body(notaCreada);
     }
 
+    @Operation(summary = "Listar mis notas", description = "Obtiene todas las notas del usuario autenticado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de notas obtenida exitosamente"),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
+    })
     @GetMapping
     public ResponseEntity<List<NotaResponseDTO>> obtenerNotasPorUsuario() {
         return ResponseEntity.ok(notaService.obtenerNotasPorUsuario());
     }
 
+    @Operation(summary = "Editar nota", description = "Actualiza título y/o contenido de una nota propia")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Nota actualizada exitosamente",
+                    content = @Content(schema = @Schema(implementation = NotaResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Nota no encontrada"),
+            @ApiResponse(responseCode = "403", description = "No eres el propietario de esta nota"),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
+    })
     @PatchMapping("/{id}")
     public ResponseEntity<NotaResponseDTO> editarNota(@PathVariable Long id,
                                                       @Valid @RequestBody NotaUpdateDTO notaUpdateDTO) {
@@ -45,7 +74,13 @@ public class NotaController {
         return ResponseEntity.ok(notaActualizada);
     }
 
-
+    @Operation(summary = "Eliminar nota", description = "Elimina permanentemente una nota propia")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Nota eliminada exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Nota no encontrada"),
+            @ApiResponse(responseCode = "403", description = "No eres el propietario de esta nota"),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarNota(@PathVariable Long id) {
         notaService.eliminarNota(id);

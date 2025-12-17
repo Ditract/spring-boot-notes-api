@@ -21,7 +21,7 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void enviarEmailVerificacion(String destinatario, String token) {
         String asunto = "Verifica tu cuenta - Notas App";
-        String linkVerificacion = baseUrl + "/verify?token=" + token;
+        String linkVerificacion = baseUrl + "/api/auth/verify?token=" + token;
 
         String mensaje = "¡Bienvenido a Notas App!\n\n" +
                 "Por favor, verifica tu cuenta haciendo clic en el siguiente enlace:\n\n" +
@@ -35,7 +35,6 @@ public class EmailServiceImpl implements EmailService {
         email.setTo(destinatario);
         email.setSubject(asunto);
         email.setText(mensaje);
-        email.setFrom("noreply@notasapp.com");
 
         mailSender.send(email);
     }
@@ -43,7 +42,7 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void enviarEmailRecuperacionPassword(String destinatario, String token) {
         String asunto = "Recuperación de contraseña - Notas App";
-        String linkReset = baseUrl + "/reset-password?token=" + token;
+        String linkReset = baseUrl + "/api/auth/reset-password?token=" + token;
 
         String mensaje = "Hola,\n\n" +
                 "Recibimos una solicitud para restablecer tu contraseña en Notas App.\n\n" +
@@ -58,7 +57,6 @@ public class EmailServiceImpl implements EmailService {
         email.setTo(destinatario);
         email.setSubject(asunto);
         email.setText(mensaje);
-        email.setFrom("noreply@notasapp.com");
 
         mailSender.send(email);
     }

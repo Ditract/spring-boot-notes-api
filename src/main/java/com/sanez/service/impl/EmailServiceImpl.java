@@ -35,7 +35,6 @@ public class EmailServiceImpl implements EmailService {
         email.setTo(destinatario);
         email.setSubject(asunto);
         email.setText(mensaje);
-        email.setFrom("noreply@notasapp.com");
 
         mailSender.send(email);
     }
@@ -58,7 +57,6 @@ public class EmailServiceImpl implements EmailService {
         email.setTo(destinatario);
         email.setSubject(asunto);
         email.setText(mensaje);
-        email.setFrom("noreply@notasapp.com");
 
         mailSender.send(email);
     }

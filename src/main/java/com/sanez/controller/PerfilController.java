@@ -1,5 +1,6 @@
 package com.sanez.controller;
 
+import com.sanez.dto.perfil.CambiarPasswordRequest;
 import com.sanez.dto.perfil.PerfilRequestDTO;
 import com.sanez.dto.perfil.PerfilResponseDTO;
 import com.sanez.service.PerfilService;
@@ -13,6 +14,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Tag(name = "Perfil", description = "Gestión del perfil del usuario autenticado")
 @SecurityRequirement(name = "Bearer Authentication")
@@ -73,5 +77,22 @@ public class PerfilController {
     public ResponseEntity<Void> removerNotaFavorita(@PathVariable Long notaId) {
         perfilService.removerNotaFavorita(notaId);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Cambiar contraseña", description = "Permite al usuario autenticado cambiar su contraseña actual por una nueva")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Contraseña actualizada exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Contraseña actual incorrecta o datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
+    })
+    @PutMapping("/mi-perfil/password")
+    public ResponseEntity<Map<String, String>> cambiarPassword(
+            @Valid @RequestBody CambiarPasswordRequest request) {
+        perfilService.cambiarPassword(request);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("mensaje", "Contraseña actualizada exitosamente");
+
+        return ResponseEntity.ok(response);
     }
 }

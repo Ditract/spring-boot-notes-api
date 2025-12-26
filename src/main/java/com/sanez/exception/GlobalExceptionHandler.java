@@ -118,6 +118,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
+    // Maneja contraseña incorrecta (400)
+    @ExceptionHandler(PasswordIncorrectaException.class)
+    public ResponseEntity<ErrorResponse> manejarPasswordIncorrecta(PasswordIncorrectaException ex,
+                                                                   WebRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Bad Request")
+                .message(ex.getMessage())
+                .path(request.getDescription(false).replace("uri=", ""))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
     // Maneja cualquier otra excepción no capturada (500)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> manejarExcepcionGeneral(Exception ex, WebRequest request){

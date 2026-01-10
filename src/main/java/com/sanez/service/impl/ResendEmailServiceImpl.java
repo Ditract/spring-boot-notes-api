@@ -1,0 +1,140 @@
+package com.sanez.service.impl;
+
+import com.resend.Resend;
+import com.resend.core.exception.ResendException;
+import com.resend.services.emails.model.CreateEmailOptions;
+import com.resend.services.emails.model.CreateEmailResponse;
+import com.sanez.service.EmailService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.stereotype.Service;
+
+/**
+ * Implementación de EmailService usando Resend para entorno de producción.
+ * Esta implementación usa la API de Resend vía HTTP
+ */
+@Service
+@Profile("prod")
+@Slf4j
+public class ResendEmailServiceImpl implements EmailService {
+
+    private final Resend resendClient;
+    private final String fromEmail;
+    private final String fromName;
+    private final String baseUrl;
+
+    public ResendEmailServiceImpl(
+            @Value("${resend.api.key}") String apiKey,
+            @Value("${resend.from.email}") String fromEmail,
+            @Value("${resend.from.name}") String fromName,
+            @Value("${app.base-url}") String baseUrl) {
+
+        this.resendClient = new Resend(apiKey);
+        this.fromEmail = fromEmail;
+        this.fromName = fromName;
+        this.baseUrl = baseUrl;
+
+        log.info("ResendEmailService inicializado para producción");
+        log.info("Remitente configurado: {} <{}>", fromName, fromEmail);
+    }
+
+    @Override
+    @Retryable(
+            retryFor = {ResendException.class, RuntimeException.class},
+            maxAttempts = 3,
+            backoff = @Backoff(
+                    delay = 2000,      // 2 segundos de delay inicial
+                    multiplier = 2.0,  // Exponencial: 2s, 4s, 8s
+                    maxDelay = 10000   // Máximo 10 segundos entre reintentos
+            )
+    )
+    public void enviarEmailVerificacion(String destinatario, String token) {
+        log.info("Enviando email de verificación a: {}", destinatario);
+
+        String asunto = "Verifica tu cuenta - Notas App";
+        String linkVerificacion = baseUrl + "/api/auth/verify?token=" + token;
+
+        String mensaje = "¡Bienvenido a Notas App!\n\n" +
+                "Por favor, verifica tu cuenta haciendo clic en el siguiente enlace:\n\n" +
+                linkVerificacion + "\n\n" +
+                "Este enlace expirará en 24 horas.\n\n" +
+                "Si no creaste esta cuenta, ignora este mensaje.\n\n" +
+                "Saludos,\n" +
+                "El equipo de Notas App";
+
+        try {
+            CreateEmailOptions emailOptions = CreateEmailOptions.builder()
+                    .from(fromName + " <" + fromEmail + ">")
+                    .to(destinatario)
+                    .subject(asunto)
+                    .text(mensaje)
+                    .build();
+
+            CreateEmailResponse response = resendClient.emails().send(emailOptions);
+            log.info("Email de verificación enviado exitosamente. ID: {}", response.getId());
+
+        } catch (ResendException e) {
+            log.error("Error al enviar email de verificación a {}: {}", destinatario, e.getMessage());
+            throw new RuntimeException("Error al enviar email de verificación", e);
+        }
+    }
+
+    @Override
+    @Retryable(
+            retryFor = {ResendException.class, RuntimeException.class},
+            maxAttempts = 3,
+            backoff = @Backoff(
+                    delay = 2000,
+                    multiplier = 2.0,
+                    maxDelay = 10000
+            )
+    )
+    public void enviarEmailRecuperacionPassword(String destinatario, String token) {
+        log.info("Enviando email de recuperación de contraseña a: {}", destinatario);
+
+        String asunto = "Recuperación de contraseña - Notas App";
+        String linkReset = baseUrl + "/api/auth/reset-password?token=" + token;
+
+        String mensaje = "Hola,\n\n" +
+                "Recibimos una solicitud para restablecer tu contraseña en Notas App.\n\n" +
+                "Para crear una nueva contraseña, haz clic en el siguiente enlace:\n\n" +
+                linkReset + "\n\n" +
+                "Este enlace expirará en 1 hora.\n\n" +
+                "Si no solicitaste este cambio, ignora este mensaje. Tu contraseña permanecerá sin cambios.\n\n" +
+                "Saludos,\n" +
+                "El equipo de Notas App";
+
+        try {
+            CreateEmailOptions emailOptions = CreateEmailOptions.builder()
+                    .from(fromName + " <" + fromEmail + ">")
+                    .to(destinatario)
+                    .subject(asunto)
+                    .text(mensaje)
+                    .build();
+
+            CreateEmailResponse response = resendClient.emails().send(emailOptions);
+            log.info("Email de recuperación enviado exitosamente. ID: {}", response.getId());
+
+        } catch (ResendException e) {
+            log.error("Error al enviar email de recuperación a {}: {}", destinatario, e.getMessage());
+            throw new RuntimeException("Error al enviar email de recuperación", e);
+        }
+    }
+
+    /**
+     * Método de recuperación que se ejecuta cuando todos los reintentos fallan.
+     * Evita que la excepción se propague al usuario final y registra el error.
+     */
+    @Recover
+    public void recover(RuntimeException e, String destinatario, String token) {
+        log.error("Todos los reintentos fallaron al enviar email a {}. Error final: {}",
+                destinatario, e.getMessage());
+        // Posible lógica adicional futura como:
+        // Guardar en una cola de reintentos, etc...
+        throw new RuntimeException("No se pudo enviar el email después de múltiples intentos", e);
+    }
+}

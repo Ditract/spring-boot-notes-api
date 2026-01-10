@@ -112,6 +112,25 @@
 			<version>2.8.14</version>
 		</dependency>
 
+		<!--SDK de Resend para Java-->
+		<dependency>
+			<groupId>com.resend</groupId>
+			<artifactId>resend-java</artifactId>
+			<version>LATEST</version>
+		</dependency>
+
+		<!-- Spring Retry -->
+		<dependency>
+			<groupId>org.springframework.retry</groupId>
+			<artifactId>spring-retry</artifactId>
+		</dependency>
+
+		<!-- Spring AOP (requerido para que @Retryable funcione) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>

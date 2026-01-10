@@ -134,11 +134,14 @@
 	</dependencies>
 
 	<build>
+
 		<plugins>
+			<!-- Compiler plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
+					<encoding>UTF-8</encoding>
 					<annotationProcessorPaths>
 						<path>
 							<groupId>org.projectlombok</groupId>
@@ -147,6 +150,8 @@
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
+
+			<!-- Spring Boot plugin -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -159,7 +164,19 @@
 					</excludes>
 				</configuration>
 			</plugin>
+
+			<!-- Lee recursos en UTF-8; properties filtrados en ISO-8859-1 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.3.1</version>
+				<configuration>
+					<encoding>UTF-8</encoding>
+					<propertiesEncoding>ISO-8859-1</propertiesEncoding>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
+
 
 </project>

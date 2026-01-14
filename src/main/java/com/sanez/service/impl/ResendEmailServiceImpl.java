@@ -4,6 +4,7 @@ import com.resend.Resend;
 import com.resend.core.exception.ResendException;
 import com.resend.services.emails.model.CreateEmailOptions;
 import com.resend.services.emails.model.CreateEmailResponse;
+import com.sanez.exception.EnvioEmailException;
 import com.sanez.service.EmailService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 /**
  * Implementación de EmailService usando Resend para entorno de producción.
- * Esta implementación usa la API de Resend vía HTTP
  */
 @Service
 @Profile("prod")
@@ -44,7 +44,7 @@ public class ResendEmailServiceImpl implements EmailService {
 
     @Override
     @Retryable(
-            retryFor = {ResendException.class, RuntimeException.class},
+            retryFor = {ResendException.class, EnvioEmailException.class},
             maxAttempts = 3,
             backoff = @Backoff(
                     delay = 2000,      // 2 segundos de delay inicial
@@ -79,13 +79,13 @@ public class ResendEmailServiceImpl implements EmailService {
 
         } catch (ResendException e) {
             log.error("Error al enviar email de verificación a {}: {}", destinatario, e.getMessage());
-            throw new RuntimeException("Error al enviar email de verificación", e);
+            throw new EnvioEmailException("No se pudo enviar el email de verificación", e);
         }
     }
 
     @Override
     @Retryable(
-            retryFor = {ResendException.class, RuntimeException.class},
+            retryFor = {ResendException.class, EnvioEmailException.class},
             maxAttempts = 3,
             backoff = @Backoff(
                     delay = 2000,
@@ -121,20 +121,19 @@ public class ResendEmailServiceImpl implements EmailService {
 
         } catch (ResendException e) {
             log.error("Error al enviar email de recuperación a {}: {}", destinatario, e.getMessage());
-            throw new RuntimeException("Error al enviar email de recuperación", e);
+            throw new EnvioEmailException("No se pudo enviar el email de recuperación de contraseña", e);
         }
     }
 
-    /**
-     * Método de recuperación que se ejecuta cuando todos los reintentos fallan.
-     * Evita que la excepción se propague al usuario final y registra el error.
-     */
+    //cuando los envios fallan
     @Recover
-    public void recover(RuntimeException e, String destinatario, String token) {
+    public void recover(EnvioEmailException e, String destinatario, String token) {
         log.error("Todos los reintentos fallaron al enviar email a {}. Error final: {}",
                 destinatario, e.getMessage());
-        // Posible lógica adicional futura como:
-        // Guardar en una cola de reintentos, etc...
-        throw new RuntimeException("No se pudo enviar el email después de múltiples intentos", e);
+
+        throw new EnvioEmailException(
+                "El servicio de email no está disponible temporalmente. Por favor, intenta más tarde.",
+                e
+        );
     }
 }

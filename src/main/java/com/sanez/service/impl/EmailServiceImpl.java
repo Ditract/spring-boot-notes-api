@@ -1,5 +1,6 @@
 package com.sanez.service.impl;
 
+import com.sanez.exception.EnvioEmailException;
 import com.sanez.service.EmailService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 /**
  * Esta implementación usa Mailtrap como servicio de testing de emails.
- * Solo se activa cuando el perfil 'dev' está activo.
  */
 @Service
 @Profile("dev")
@@ -52,7 +52,7 @@ public class EmailServiceImpl implements EmailService {
             log.info("Email de verificación enviado exitosamente a: {}", destinatario);
         } catch (Exception e) {
             log.error("Error al enviar email de verificación a {}: {}", destinatario, e.getMessage());
-            throw new RuntimeException("Error al enviar email de verificación", e);
+            throw new EnvioEmailException("No se pudo enviar el email de verificación", e);
         }
     }
 
@@ -82,7 +82,7 @@ public class EmailServiceImpl implements EmailService {
             log.info("Email de recuperación enviado exitosamente a: {}", destinatario);
         } catch (Exception e) {
             log.error("Error al enviar email de recuperación a {}: {}", destinatario, e.getMessage());
-            throw new RuntimeException("Error al enviar email de recuperación", e);
+            throw new EnvioEmailException("No se pudo enviar el email de recuperación de contraseña", e);
         }
     }
 }

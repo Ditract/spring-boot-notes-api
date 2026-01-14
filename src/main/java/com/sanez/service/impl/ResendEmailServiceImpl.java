@@ -56,7 +56,8 @@ public class ResendEmailServiceImpl implements EmailService {
         log.info("Enviando email de verificación a: {}", destinatario);
 
         String asunto = "Verifica tu cuenta - Notas App";
-        String linkVerificacion = baseUrl + "/api/auth/verify?token=" + token;
+        String baseFrontend = "https://ditract.github.io/notas-app-frontend/";
+        String linkVerificacion = baseFrontend + "verify.html?token=" + token;
 
         String mensaje = "¡Bienvenido a Notas App!\n\n" +
                 "Por favor, verifica tu cuenta haciendo clic en el siguiente enlace:\n\n" +
@@ -97,7 +98,8 @@ public class ResendEmailServiceImpl implements EmailService {
         log.info("Enviando email de recuperación de contraseña a: {}", destinatario);
 
         String asunto = "Recuperación de contraseña - Notas App";
-        String linkReset = baseUrl + "/api/auth/reset-password?token=" + token;
+        String baseFrontend = "https://ditract.github.io/notas-app-frontend/";
+        String linkReset = baseFrontend + "reset-password.html?token=" + token;
 
         String mensaje = "Hola,\n\n" +
                 "Recibimos una solicitud para restablecer tu contraseña en Notas App.\n\n" +

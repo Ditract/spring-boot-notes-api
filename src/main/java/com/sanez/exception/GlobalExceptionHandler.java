@@ -46,6 +46,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
+    // Maneja errores de envío de email (503 Service Unavailable)
+    @ExceptionHandler(EnvioEmailException.class)
+    public ResponseEntity<ErrorResponse> manejarEnvioEmail(EnvioEmailException ex,
+                                                           WebRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.SERVICE_UNAVAILABLE.value())
+                .error("Service Unavailable")
+                .message(ex.getMessage())
+                .path(request.getDescription(false).replace("uri=", ""))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponse);
+    }
+
     // Maneja credenciales inválidas en login (401)
     @ExceptionHandler(AccesoNoAutorizadoException.class)
     public ResponseEntity<ErrorResponse> manejarCredencialesinvalidas(AccesoNoAutorizadoException ex,

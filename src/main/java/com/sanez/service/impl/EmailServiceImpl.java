@@ -1,12 +1,20 @@
 package com.sanez.service.impl;
 
+import com.sanez.exception.EnvioEmailException;
 import com.sanez.service.EmailService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+/**
+ * Esta implementación usa Mailtrap como servicio de testing de emails.
+ */
 @Service
+@Profile("dev")
+@Slf4j
 public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
@@ -16,10 +24,13 @@ public class EmailServiceImpl implements EmailService {
 
     public EmailServiceImpl(JavaMailSender mailSender) {
         this.mailSender = mailSender;
+        log.info("EmailServiceImpl inicializado para desarrollo (Mailtrap)");
     }
 
     @Override
     public void enviarEmailVerificacion(String destinatario, String token) {
+        log.info("Enviando email de verificación a: {} (via Mailtrap)", destinatario);
+
         String asunto = "Verifica tu cuenta - Notas App";
         String linkVerificacion = baseUrl + "/api/auth/verify?token=" + token;
 
@@ -36,11 +47,19 @@ public class EmailServiceImpl implements EmailService {
         email.setSubject(asunto);
         email.setText(mensaje);
 
-        mailSender.send(email);
+        try {
+            mailSender.send(email);
+            log.info("Email de verificación enviado exitosamente a: {}", destinatario);
+        } catch (Exception e) {
+            log.error("Error al enviar email de verificación a {}: {}", destinatario, e.getMessage());
+            throw new EnvioEmailException("No se pudo enviar el email de verificación", e);
+        }
     }
 
     @Override
     public void enviarEmailRecuperacionPassword(String destinatario, String token) {
+        log.info("Enviando email de recuperación de contraseña a: {} (via Mailtrap)", destinatario);
+
         String asunto = "Recuperación de contraseña - Notas App";
         String linkReset = baseUrl + "/api/auth/reset-password?token=" + token;
 
@@ -58,6 +77,12 @@ public class EmailServiceImpl implements EmailService {
         email.setSubject(asunto);
         email.setText(mensaje);
 
-        mailSender.send(email);
+        try {
+            mailSender.send(email);
+            log.info("Email de recuperación enviado exitosamente a: {}", destinatario);
+        } catch (Exception e) {
+            log.error("Error al enviar email de recuperación a {}: {}", destinatario, e.getMessage());
+            throw new EnvioEmailException("No se pudo enviar el email de recuperación de contraseña", e);
+        }
     }
 }

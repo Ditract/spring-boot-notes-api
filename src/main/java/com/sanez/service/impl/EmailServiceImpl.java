@@ -2,12 +2,16 @@ package com.sanez.service.impl;
 
 import com.sanez.exception.EnvioEmailException;
 import com.sanez.service.EmailService;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 /**
  * Esta implementación usa Mailtrap como servicio de testing de emails.
@@ -18,39 +22,40 @@ import org.springframework.stereotype.Service;
 public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
+    private final TemplateEngine templateEngine;
 
     @Value("${app.base-url}")
     private String baseUrl;
 
-    public EmailServiceImpl(JavaMailSender mailSender) {
+    public EmailServiceImpl(JavaMailSender mailSender, TemplateEngine templateEngine) {
         this.mailSender = mailSender;
-        log.info("EmailServiceImpl inicializado para desarrollo (Mailtrap)");
+        this.templateEngine = templateEngine;
     }
 
     @Override
     public void enviarEmailVerificacion(String destinatario, String token) {
-        log.info("Enviando email de verificación a: {} (via Mailtrap)", destinatario);
+        log.info("Enviando email de verificación a: {} ", destinatario);
 
         String asunto = "Verifica tu cuenta - Notas App";
-        String linkVerificacion = baseUrl + "/api/auth/verify?token=" + token;
+        String linkVerificacion = baseUrl + "/verify.html?token=" + token;
 
-        String mensaje = "¡Bienvenido a Notas App!\n\n" +
-                "Por favor, verifica tu cuenta haciendo clic en el siguiente enlace:\n\n" +
-                linkVerificacion + "\n\n" +
-                "Este enlace expirará en 24 horas.\n\n" +
-                "Si no creaste esta cuenta, ignora este mensaje.\n\n" +
-                "Saludos,\n" +
-                "El equipo de Notas App";
+        Context context = new Context();
+        context.setVariable("linkVerificacion", linkVerificacion);
 
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setTo(destinatario);
-        email.setSubject(asunto);
-        email.setText(mensaje);
+        String htmlContent = templateEngine.process("email/email-verificacion", context);
 
         try {
-            mailSender.send(email);
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setTo(destinatario);
+            helper.setSubject(asunto);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(mimeMessage);
             log.info("Email de verificación enviado exitosamente a: {}", destinatario);
-        } catch (Exception e) {
+
+        } catch (MessagingException e) {
             log.error("Error al enviar email de verificación a {}: {}", destinatario, e.getMessage());
             throw new EnvioEmailException("No se pudo enviar el email de verificación", e);
         }
@@ -58,29 +63,28 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void enviarEmailRecuperacionPassword(String destinatario, String token) {
-        log.info("Enviando email de recuperación de contraseña a: {} (via Mailtrap)", destinatario);
+        log.info("Enviando email de recuperación de contraseña a: {} ", destinatario);
 
         String asunto = "Recuperación de contraseña - Notas App";
-        String linkReset = baseUrl + "/api/auth/reset-password?token=" + token;
+        String linkReset = baseUrl + "/reset-password.html?token=" + token;
 
-        String mensaje = "Hola,\n\n" +
-                "Recibimos una solicitud para restablecer tu contraseña en Notas App.\n\n" +
-                "Para crear una nueva contraseña, haz clic en el siguiente enlace:\n\n" +
-                linkReset + "\n\n" +
-                "Este enlace expirará en 1 hora.\n\n" +
-                "Si no solicitaste este cambio, ignora este mensaje. Tu contraseña permanecerá sin cambios.\n\n" +
-                "Saludos,\n" +
-                "El equipo de Notas App";
+        Context context = new Context();
+        context.setVariable("linkReset", linkReset);
 
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setTo(destinatario);
-        email.setSubject(asunto);
-        email.setText(mensaje);
+        String htmlContent = templateEngine.process("email/email-recuperacion", context);
 
         try {
-            mailSender.send(email);
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setTo(destinatario);
+            helper.setSubject(asunto);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(mimeMessage);
             log.info("Email de recuperación enviado exitosamente a: {}", destinatario);
-        } catch (Exception e) {
+
+        } catch (MessagingException e) {
             log.error("Error al enviar email de recuperación a {}: {}", destinatario, e.getMessage());
             throw new EnvioEmailException("No se pudo enviar el email de recuperación de contraseña", e);
         }

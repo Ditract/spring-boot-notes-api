@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifica tu cuenta</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #4CAF50;
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 14px 30px;
+            background-color: #4CAF50;
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+        }
+        .alert {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>¡Bienvenido a Notas App!</h1>
+    </div>
+
+    <div class="content">
+        <p>Hola,</p>
+        <p>Gracias por registrarte en <strong>Notas App</strong>. Estamos emocionados de tenerte con nosotros.</p>
+        <p>Para completar tu registro y verificar tu cuenta, por favor haz clic en el siguiente botón:</p>
+
+        <div style="text-align: center;">
+            <a th:href="${linkVerificacion}" class="btn">Verificar mi cuenta</a>
+        </div>
+
+
+        <div class="alert">
+            Este enlace expirará en <strong>24 horas</strong>.
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Si no creaste esta cuenta, puedes ignorar este mensaje.</p>
+        <p>Saludos cordiales,<br><strong>El equipo de Notas App</strong></p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="font-size: 11px;">Este es un correo automático, por favor no respondas a este mensaje.</p>
+    </div>
+</div>
+</body>
+</html>

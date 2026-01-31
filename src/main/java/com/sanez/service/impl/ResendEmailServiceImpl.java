@@ -13,6 +13,8 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 /**
  * Implementación de EmailService usando Resend para entorno de producción.
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Service;
 public class ResendEmailServiceImpl implements EmailService {
 
     private final Resend resendClient;
+    private final TemplateEngine templateEngine;
     private final String fromEmail;
     private final String fromName;
     private final String baseUrl;
@@ -31,12 +34,14 @@ public class ResendEmailServiceImpl implements EmailService {
             @Value("${resend.api.key}") String apiKey,
             @Value("${resend.from.email}") String fromEmail,
             @Value("${resend.from.name}") String fromName,
-            @Value("${app.base-url}") String baseUrl) {
+            @Value("${app.base-url}") String baseUrl,
+            TemplateEngine templateEngine) {
 
         this.resendClient = new Resend(apiKey);
         this.fromEmail = fromEmail;
         this.fromName = fromName;
         this.baseUrl = baseUrl;
+        this.templateEngine = templateEngine;
 
         log.info("ResendEmailService inicializado para producción");
         log.info("Remitente configurado: {} <{}>", fromName, fromEmail);
@@ -56,23 +61,20 @@ public class ResendEmailServiceImpl implements EmailService {
         log.info("Enviando email de verificación a: {}", destinatario);
 
         String asunto = "Verifica tu cuenta - Notas App";
-        String baseFrontend = "https://ditract.github.io/notas-app-frontend/";
-        String linkVerificacion = baseFrontend + "verify.html?token=" + token;
+        String linkVerificacion = baseUrl + "verify.html?token=" + token;
 
-        String mensaje = "¡Bienvenido a Notas App!\n\n" +
-                "Por favor, verifica tu cuenta haciendo clic en el siguiente enlace:\n\n" +
-                linkVerificacion + "\n\n" +
-                "Este enlace expirará en 24 horas.\n\n" +
-                "Si no creaste esta cuenta, ignora este mensaje.\n\n" +
-                "Saludos,\n" +
-                "El equipo de Notas App";
+        Context context = new Context();
+        context.setVariable("linkVerificacion", linkVerificacion);
 
+        String htmlContent = templateEngine.process("email/email-verificacion", context);
+
+        //TODO extraer código repetitivo y agregar a un método privado
         try {
             CreateEmailOptions emailOptions = CreateEmailOptions.builder()
                     .from(fromName + " <" + fromEmail + ">")
                     .to(destinatario)
                     .subject(asunto)
-                    .text(mensaje)
+                    .html(htmlContent)
                     .build();
 
             CreateEmailResponse response = resendClient.emails().send(emailOptions);
@@ -98,24 +100,19 @@ public class ResendEmailServiceImpl implements EmailService {
         log.info("Enviando email de recuperación de contraseña a: {}", destinatario);
 
         String asunto = "Recuperación de contraseña - Notas App";
-        String baseFrontend = "https://ditract.github.io/notas-app-frontend/";
-        String linkReset = baseFrontend + "reset-password.html?token=" + token;
+        String linkReset = baseUrl + "reset-password.html?token=" + token;
 
-        String mensaje = "Hola,\n\n" +
-                "Recibimos una solicitud para restablecer tu contraseña en Notas App.\n\n" +
-                "Para crear una nueva contraseña, haz clic en el siguiente enlace:\n\n" +
-                linkReset + "\n\n" +
-                "Este enlace expirará en 1 hora.\n\n" +
-                "Si no solicitaste este cambio, ignora este mensaje. Tu contraseña permanecerá sin cambios.\n\n" +
-                "Saludos,\n" +
-                "El equipo de Notas App";
+        Context context = new Context();
+        context.setVariable("linkReset", linkReset);
+
+        String htmlContent = templateEngine.process("email/email-recuperacion", context);
 
         try {
             CreateEmailOptions emailOptions = CreateEmailOptions.builder()
                     .from(fromName + " <" + fromEmail + ">")
                     .to(destinatario)
                     .subject(asunto)
-                    .text(mensaje)
+                    .html(htmlContent)
                     .build();
 
             CreateEmailResponse response = resendClient.emails().send(emailOptions);
@@ -127,7 +124,6 @@ public class ResendEmailServiceImpl implements EmailService {
         }
     }
 
-    //cuando los envios fallan
     @Recover
     public void recover(EnvioEmailException e, String destinatario, String token) {
         log.error("Todos los reintentos fallaron al enviar email a {}. Error final: {}",
